@@ -3,7 +3,7 @@
 <head> 
     <meta charset="UTF-8" />
     <title>Making your first Phaser 3 Game - Part 10</title>
-    <script src="//cdn.jsdelivr.net/npm/phaser@3.11.0/dist/phaser.js"></script>
+    <script src="//cdn.jsdelivr.net/npm/phaser@3.15.0/dist/phaser.js"></script>
     <style type="text/css">
         body {
             margin: 0;
@@ -45,10 +45,10 @@ var game = new Phaser.Game(config);
 
 function preload ()
 {
-    this.load.image('sky', 'assets/sky.png');
+    this.load.image('sky', 'assets/darksky.png');
     this.load.image('ground', 'assets/platform.png');
-    this.load.image('star', 'assets/star.png');
-    this.load.image('bomb', 'assets/bomb.png');
+    this.load.image('star', 'assets/cosmic.png');
+    this.load.image('bomb', 'assets/void.png');
     this.load.spritesheet('dude', 'assets/dude.png', { frameWidth: 32, frameHeight: 48 });
 }
 
@@ -73,7 +73,7 @@ function create ()
     player = this.physics.add.sprite(100, 450, 'dude');
 
     //  Player physics properties. Give the little guy a slight bounce.
-    player.setBounce(0.2);
+    player.setBounce(0);
     player.setCollideWorldBounds(true);
 
     //  Our player animations, turning, walking left and walking right.
@@ -104,7 +104,7 @@ function create ()
     stars = this.physics.add.group({
         key: 'star',
         repeat: 11,
-        setXY: { x: 12, y: 0, stepX: 70 }
+        setXY: { x: 12, y: 0, stepX: 70 },
     });
 
     stars.children.iterate(function (child) {
@@ -132,8 +132,13 @@ function create ()
 
 function update ()
 {
+
     if (gameOver)
     {
+        if (cursors.shift.isDown) {
+            reset_game();
+            this.physics.resume();
+        }
         return;
     }
 
@@ -167,7 +172,7 @@ function collectStar (player, star)
     star.disableBody(true, true);
 
     //  Add and update the score
-    score += 10;
+    score += 20;
     scoreText.setText('Score: ' + score);
 
     if (stars.countActive(true) === 0)
@@ -190,11 +195,27 @@ function collectStar (player, star)
     }
 }
 
+function reset_game () {
+    gameOver = false;
+    stars.children.iterate(function (child) {
+        child.enableBody(true, child.x, 0, true, true);
+    });
+    bombs.children.iterate(function (child) {
+        child.disableBody(true, true);
+    });
+    score = 0;
+    scoreText.setText('Score: ' + score);
+
+    player.x = 100;
+    player.y = 450;
+
+}
+
 function hitBomb (player, bomb)
 {
     this.physics.pause();
 
-    player.setTint(0xff0000);
+    //player.setTint(0xff0000);
 
     player.anims.play('turn');
 
